@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import json
 import os
 import requests
@@ -24,7 +23,6 @@ def user():
         # If we can't pre-populate, just set it to blank.
         # This will force the user to choose a valid course name
         db.auth_user.course_id.default = ""
-        # this looks to be important 
 
         # Otherwise, use the referer URL to try to pre-populate
         ref = request.env.http_referer
@@ -88,50 +86,48 @@ def user():
     return dict(form=form)
 
 def registerinstructor():
-    try:
-        # After the registration form is submitted the registration is processed here
-        # this function will not return in that case, but instead continue on and end up
-        # redirecting to index.
-        # through db.auth_user._after_insert.append(some_function)
-        form = auth()
-    except HTTPError:
-        session.flash = (
-            "Sorry, that service failed.  Try a different service or file a bug"
-        )
-        redirect(URL("default", "index"))
-    return dict ()
+    """used to request an instructors input from registration page, returns
+    errors if any and redirects page after the account is created"""
 
-def copyofuser():    
+    username = request.vars.username
+    fname = request.vars.first_name
+    lname = request.vars.last_name
+    institution = request.vars.institution
+    faculty_url = request.vars.faculty_url
+    email = request.vars.email
+    password = request.vars.password
 
-    try:
-        # After the registration form is submitted the registration is processed here
-        # this function will not return in that case, but instead continue on and end up
-        # redirecting to index.
-        # through db.auth_user._after_insert.append(some_function)
-        form = auth()
-    except HTTPError:
-        session.flash = (
-            "Sorry, that service failed.  Try a different service or file a bug"
-        )
-        redirect(URL("default", "index"))
-    
-    test=form.vars.institution_name
+    if request.vars.submit:
+        errors = validateUser(username, password, fname, lname, email, institution, faculty_url)
+        if len(errors) > 0:
+            return dict(errors=errors)
+        else: 
+            createUser(username, password, fname, lname, email, institution, faculty_url=faculty_url, instructor=True)
+            redirect(URL('default','instructortutorial'))    
+    return dict(errors=None)
 
-    request.inputForm['institution_name'] 
+def instructortutorial():
+    """used to send user information to complete log in process"""
 
-    return dict (test=test)
+    username=request.vars.username
+    fname=request.vars.first_name
+    lname = request.vars.last_name
+    institution = request.vars.institution
+    faculty_url = request.vars.faculty_url
+    email = request.vars.email
+    password = request.vars.password
 
+    users=[]
 
+    users.append(username)
+    users.append(fname)
+    users.append(lname)
+    users.append(institution)
+    users.append(faculty_url)
+    users.append(email)
+    users.append(password)
 
-# def new_instructor_user():
-#     print 
-
-
-
-# Can use db.auth_user._after_insert.append(make_section_entries)
-# to add a custom function to deal with donation and/or creating a course
-# May have to disable auto_login ??
-
+    return dict(users=users)
 
 def download():
     return response.download(request, db)
