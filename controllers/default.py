@@ -89,7 +89,7 @@ def registerinstructor():
     """used to request an instructors input from registration page, returns
     errors if any and redirects page after the account is created"""
 
-    username = request.vars.username
+    username = request.vars.username 
     fname = request.vars.first_name
     lname = request.vars.last_name
     institution = request.vars.institution
